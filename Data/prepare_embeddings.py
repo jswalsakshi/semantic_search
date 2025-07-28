@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 import os
 
-# Change to project root
 project_root = Path(__file__).parent.parent
 os.chdir(project_root)
 
@@ -12,10 +11,8 @@ def get_movie_keywords(title, overview, genres, directors, cast):
     """Generate rich keywords and context for movies"""
     keywords = []
     
-    # Title-based keywords
     title_lower = title.lower()
     
-    # Sports movies keywords
     sports_keywords = {
         'dangal': ['wrestling', 'biography', 'sports drama', 'father daughter', 'Olympic wrestling', 'biographical sports'],
         'bhaag milkha bhaag': ['running', 'athletics', 'biography', 'sports drama', 'Olympic runner'],
@@ -27,13 +24,12 @@ def get_movie_keywords(title, overview, genres, directors, cast):
         'ford v ferrari': ['racing', 'biography', 'automotive', 'sports drama']
     }
     
-    # Biographical movie indicators
+
     biographical_indicators = [
         'biography', 'biopic', 'biographical', 'based on true story', 
         'real life', 'true events', 'historical figure'
     ]
     
-    # Sports categories
     sports_categories = {
         'wrestling': ['wrestling', 'dangal', 'sultan', 'grappling'],
         'boxing': ['boxing', 'mary kom', 'rocky', 'fighter'],
@@ -43,26 +39,21 @@ def get_movie_keywords(title, overview, genres, directors, cast):
         'football': ['football', 'soccer', 'goal']
     }
     
-    # Add specific keywords for known movies
     for movie, movie_keywords in sports_keywords.items():
         if movie in title_lower:
             keywords.extend(movie_keywords)
     
-    # Add biographical context
     if overview and any(indicator in overview.lower() for indicator in biographical_indicators):
         keywords.extend(['biographical', 'true story', 'real person', 'inspiring'])
     
-    # Add sports context
     for sport, sport_keywords in sports_categories.items():
         if any(keyword in title_lower or (overview and keyword in overview.lower()) for keyword in sport_keywords):
             keywords.extend([f'{sport} movie', f'{sport} drama', f'{sport} sports'])
     
-    # Family drama indicators
     family_keywords = ['father', 'daughter', 'son', 'family', 'parent', 'child']
     if overview and any(keyword in overview.lower() for keyword in family_keywords):
         keywords.extend(['family drama', 'family relationships', 'emotional'])
     
-    # Add genre-specific context
     if genres:
         genre_context = {
             'Drama': ['emotional', 'character driven', 'serious'],

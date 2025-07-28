@@ -3,8 +3,15 @@ import sys
 from pathlib import Path
 import ast
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+
+# Optional plotly import with fallback
+try:
+    import plotly.express as px
+    import plotly.graph_objects as go
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+    print("⚠️ Plotly not available. Charts will be disabled.")
 
 # Add the parent directory to the path
 parent_dir = Path(__file__).parent.parent
@@ -649,20 +656,27 @@ elif search_mode == "📊 Analytics Mode":
                 ])
                 
                 if not intent_df.empty:
-                    # Create colorful bar chart
-                    fig = px.bar(
-                        intent_df, 
-                        x='Confidence', 
-                        y='Intent', 
-                        orientation='h',
-                        title="🎯 Intent Classification Confidence",
-                        color='Confidence',
-                        color_continuous_scale='viridis',
-                        text='Confidence'
-                    )
-                    fig.update_traces(texttemplate='%{text:.1%}', textposition='outside')
-                    fig.update_layout(height=400, showlegend=False)
-                    st.plotly_chart(fig, use_container_width=True)
+                    if PLOTLY_AVAILABLE:
+                        # Create colorful bar chart
+                        fig = px.bar(
+                            intent_df, 
+                            x='Confidence', 
+                            y='Intent', 
+                            orientation='h',
+                            title="🎯 Intent Classification Confidence",
+                            color='Confidence',
+                            color_continuous_scale='viridis',
+                            text='Confidence'
+                        )
+                        fig.update_traces(texttemplate='%{text:.1%}', textposition='outside')
+                        fig.update_layout(height=400, showlegend=False)
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        # Fallback: Simple bar chart using Streamlit
+                        st.markdown("**Intent Classification Results:**")
+                        for _, row in intent_df.iterrows():
+                            st.metric(f"🎯 {row['Intent']}", f"{row['Confidence']:.1%}")
+                            st.progress(row['Confidence'])
             
             # Entity Analysis with Enhanced Display
             st.markdown("### 🏷️ Entity Extraction")
@@ -677,7 +691,7 @@ elif search_mode == "📊 Analytics Mode":
                     st.metric("🎭 Genres", len(set(genres)) if genres else 0)
                     if genres:
                         for genre in set(genres):
-                            st.badge(genre, type="secondary")
+                            st.write(f"🎭 {genre}")
                 
                 with col2:
                     sources = entities.get('sources', [])
